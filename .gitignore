@@ -1,0 +1,5 @@
+ml-latest-small/
+model/
+airflow/dags/.bentoignore   
+airflow/dags/__pycache__
+.mypy_cache/
