@@ -8,11 +8,14 @@ import numpy as np
 import pandas as pd
 import pydantic
 from bentoml.io import JSON
+from pathlib import Path
 
-movielens_dir = os.path.join(dir, 'ml-latest-small')
-ratings_file = movielens_dir / 'ratings.csv'
+curr_dir = Path(__file__).parent
+movielens_dir = os.path.join(curr_dir, 'ml-latest-small')
+model_dir = os.path.join(curr_dir,'model')
+ratings_file = os.path.join(movielens_dir, 'ratings.csv')
 df = pd.read_csv(ratings_file)
-movie_df = pd.read_csv(movielens_dir / 'movies.csv')
+movie_df = pd.read_csv(os.path.join(movielens_dir, 'movies.csv'))
 user_ids = df['userId'].unique().tolist()
 user2user_encoded = {x: i for i, x in enumerate(user_ids)}
 userencoded2user = {i: x for i, x in enumerate(user_ids)}
@@ -25,12 +28,11 @@ df['movie'] = df['movieId'].map(movie2movie_encoded)
 # `load` the model back in memory:
 try:
     model = bentoml.models.import_model(
-        'model/addition_model-fz7wxvhxggjtplg6.bentomodel',
+       model_dir  
     )
 except:
     model = bentoml.keras.load_model('addition_model:latest')
 
-# Run a given model under `Runner` abstraction with `load_runner`
 runner = bentoml.keras.get('addition_model:latest').to_runner()
 
 svc = bentoml.Service('movie_recommender', runners=[runner])

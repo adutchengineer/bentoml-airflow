@@ -10,5 +10,5 @@ req = requests.get(movielens_data_file_url)
 print('Downloading Completed')
 
 file = zipfile.ZipFile(BytesIO(req.content))
-dir = os.getcwd()
+dir = os.getcwd().parent
 file.extractall(dir)

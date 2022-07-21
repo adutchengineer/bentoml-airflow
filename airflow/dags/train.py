@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import urllib.request
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -40,6 +39,7 @@ class RecommenderNet(keras.Model):
         )
         self.movie_bias = layers.Embedding(num_movies, 1)
 
+    @tf.function
     def call(self, inputs):
         user_vector = self.user_embedding(inputs[:, 0])
         user_bias = self.user_bias(inputs[:, 0])
@@ -52,7 +52,18 @@ class RecommenderNet(keras.Model):
         return tf.nn.sigmoid(x)
 
 def train_model(**kwargs):
-    movielens_dir = os.path.join(dir, 'ml-latest-small')
+    curr_dir = Path(__file__).parent 
+    movielens_dir = os.path.join(curr_dir, 'ml-latest-small') 
+    print(curr_dir)
+    if not os.path.exists(movielens_dir):
+        movielens_data_file_url = (
+        'http://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
+        )
+        req = requests.get(movielens_data_file_url)
+        print('Downloading Completed')
+
+        file = zipfile.ZipFile(BytesIO(req.content))
+        file.extractall(curr_dir)
 
     ratings_file = os.path.join(movielens_dir, 'ratings.csv')
     df = pd.read_csv(ratings_file)
@@ -100,7 +111,8 @@ def train_model(**kwargs):
         verbose=1,
         validation_data=(x_val, y_val),
     )
-    os.makedirs(os.path.join(dir,'model'),exist_ok=True)
+    model_dir = os.path.join(curr_dir,'model')
+    os.makedirs(model_dir,exist_ok=True)
     # only works if you are on same server
     bentoml.keras.save_model('addition_model', model)
-    bentoml.models.export_model('addition_model:latest', 'model/')
+    bentoml.models.export_model('addition_model:latest', model_dir)

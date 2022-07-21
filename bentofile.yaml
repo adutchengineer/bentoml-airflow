@@ -6,7 +6,6 @@ include:
 - "*.py"
 python:
   packages:
-    - scikit-learn
     - pandas
     - pydantic
     - tensorflow
