@@ -4,6 +4,7 @@ labels:
   project: gallery
 include:
 - "*.py"
+- ml-latest-small
 python:
   packages:
     - pandas

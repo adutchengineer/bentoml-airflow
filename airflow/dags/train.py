@@ -114,5 +114,5 @@ def train_model(**kwargs):
     model_dir = os.path.join(curr_dir,'model')
     os.makedirs(model_dir,exist_ok=True)
     # only works if you are on same server
-    bentoml.keras.save_model('addition_model', model)
+    bentoml.tensorflow.save_model('addition_model', model, signatures={"__call__": {"batchable": True}})
     bentoml.models.export_model('addition_model:latest', model_dir)

@@ -25,25 +25,16 @@ movie_encoded2movie = {i: x for i, x in enumerate(movie_ids)}
 df['user'] = df['userId'].map(user2user_encoded)
 df['movie'] = df['movieId'].map(movie2movie_encoded)
 
-# `load` the model back in memory:
-try:
-    model = bentoml.models.import_model(
-       model_dir  
-    )
-except:
-    model = bentoml.keras.load_model('addition_model:latest')
-
-runner = bentoml.keras.get('addition_model:latest').to_runner()
-
+runner = bentoml.tensorflow.get('addition_model:latest').to_runner()
 svc = bentoml.Service('movie_recommender', runners=[runner])
 
 
-class KFServingInputSchema(pydantic.BaseModel):
+class User(pydantic.BaseModel):
     user_id: int
 
 
 kfserving_input = JSON(
-    pydantic_model=KFServingInputSchema,
+    pydantic_model=User,
     validate_json=True,
 )
 
@@ -51,9 +42,9 @@ kfserving_input = JSON(
 @svc.api(
     input=kfserving_input,
     output=JSON(),
-    route='',
+    route=''
 )
-def classify(kf_input: KFServingInputSchema) -> json:
+def classify(kf_input: User) -> json:
     user_id = kf_input.user_id
     movies_watched_by_user = df[df.userId == user_id]
     movies_not_watched = movie_df[
@@ -69,7 +60,7 @@ def classify(kf_input: KFServingInputSchema) -> json:
     user_movie_array = np.hstack(
         ([[user_encoder]] * len(movies_not_watched), movies_not_watched),
     )
-    ratings = model.predict(user_movie_array).flatten()
+    ratings = runner.run(user_movie_array).flatten()
     top_ratings_indices = ratings.argsort()[-10:][::-1]
     recommended_movie_ids = [
         movie_encoded2movie.get(movies_not_watched[x][0]) for x in top_ratings_indices
