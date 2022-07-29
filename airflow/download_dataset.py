@@ -1,3 +1,8 @@
+"""
+This script will download the necessary data for the training to run.
+Note: The download will automatically happen in train.py if it does not exist
+"""
+
 from io import BytesIO
 import requests
 import os

@@ -28,19 +28,18 @@ df['movie'] = df['movieId'].map(movie2movie_encoded)
 runner = bentoml.tensorflow.get('addition_model:latest').to_runner()
 svc = bentoml.Service('movie_recommender', runners=[runner])
 
-
 class User(pydantic.BaseModel):
     user_id: int
 
 
-kfserving_input = JSON(
+user_input = JSON(
     pydantic_model=User,
     validate_json=True,
 )
 
 
 @svc.api(
-    input=kfserving_input,
+    input=user_input,
     output=JSON(),
     route=''
 )
