@@ -1,0 +1,8 @@
+api_version: v1
+name: movie-recommender-jul242022
+operator:
+  name: heroku
+template: terraform
+spec:
+  dyno_counts: 1
+  dyno_type: free
